@@ -1,0 +1,39 @@
+{
+  "name": "userlogin",
+  "version": "1.0.0",
+  "description": "user login api",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js",
+    "test": "mocha tests/**/*Tests.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JayMellor/UserLogin.git"
+  },
+  "keywords": [
+    "api"
+  ],
+  "author": "Jay Mellor",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JayMellor/UserLogin/issues"
+  },
+  "homepage": "https://github.com/JayMellor/UserLogin#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "mongoose": "5.4.22"
+  },
+  "nodemonConfig": {
+    "restartable": "rs",
+    "ignore": [
+      "node_modules/**/node_modules"
+    ],
+    "delay": "2500",
+    "env": {
+      "NODE_ENV": "development",
+      "PORT": 4000
+    }
+  }
+}
