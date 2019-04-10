@@ -1,5 +1,8 @@
 
+"use-strict";
+
 const User = require('../models/user-model');
+const httpStatus = require('http-status');
 
 module.exports = () => {
 
@@ -34,7 +37,7 @@ module.exports = () => {
         ];
 
         if (!verifyRequest(request, options)) {
-            return response.status(400).send('error');
+            return response.status(httpStatus.BAD_REQUEST).send('error');
         }
 
         const reqUserName = request.body.username;
@@ -45,13 +48,17 @@ module.exports = () => {
             password: reqPassword
         }, (error, user) => {
             if (error) {
-                return response.send(error);
+                return response.status(httpStatus.FORBIDDEN).send(error);
             }
             if (user) {
-                return response.send(`Successfully logged in. Welcome ${reqUserName}!`);
+                return response.status(httpStatus.OK)
+                .send(`{ 
+                    "success": "true",
+                    "user": ${JSON.stringify(user)}
+                }`);
             }
             else {
-                return response.send('Invalid username/password combination');
+                return response.status(httpStatus.FORBIDDEN).send('Invalid username/password combination');
             }
         });
     };
@@ -62,16 +69,16 @@ module.exports = () => {
         const newPassword = request.body.newPassword;
 
         if (!reqUserName) {
-            return response.status(400).send('Please input a username.');
+            return response.status(httpStatus.BAD_REQUEST).send('Please input a username.');
         }
         if (!oldPassword) {
-            return response.status(400).send('Please input your current password');
+            return response.status(httpStatus.BAD_REQUEST).send('Please input your current password');
         }
         if (!newPassword) {
-            return response.status(400).send('Please input your new password');
+            return response.status(httpStatus.BAD_REQUEST).send('Please input your new password');
         }
         if (oldPassword === newPassword) {
-            return response.status(400).send('New password must be different to the current one');
+            return response.status(httpStatus.BAD_REQUEST).send('New password must be different to the current one');
         }
 
         User.findOne({
@@ -93,7 +100,7 @@ module.exports = () => {
                 });
             }
             else {
-                return response.send('Invalid username/password combination');
+                return response.status(httpStatus.BAD_REQUEST).send('Invalid username/password combination');
             }
         });
 
@@ -115,10 +122,10 @@ module.exports = () => {
 
         // check request has username and password
         if (!reqUserName) {
-            return response.status(400).send('Please input a username.');
+            return response.status(httpStatus.BAD_REQUEST).send('Please input a username.');
         }
         if (!reqPassword) {
-            return response.status(400).send('Please input a password');
+            return response.status(httpStatus.BAD_REQUEST).send('Please input a password');
         }
 
         // check username does not already exist
@@ -141,7 +148,7 @@ module.exports = () => {
                 });
 
                 user.save();
-                response.status(201);
+                response.status(httpStatus.CREATED);
                 return response.json(user);
             }
         });
