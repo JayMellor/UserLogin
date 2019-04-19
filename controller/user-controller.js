@@ -6,42 +6,17 @@ const httpStatus = require('http-status');
 
 module.exports = () => {
 
-    const verifyRequest = (request, options) => {
-
-        let requestIsValid = true;
-
-        Object.entries(request.body).forEach((item) => {
-            const key = item[0];
-            const value = item[1];
-
-            const matchingKey = options.find((option) => option === key);
-
-            if (!matchingKey) {
-                requestIsValid = false;
-            }
-            if (!value) {
-                requestIsValid = false;
-            }
-
-        });
-
-        return requestIsValid;
-
-    }
-
     const loginUser = (request, response) => {
-
-        const options = [
-            'username',
-            'password'
-        ];
-
-        if (!verifyRequest(request, options)) {
-            return response.status(httpStatus.BAD_REQUEST).send('error');
-        }
 
         const reqUserName = request.body.username;
         const reqPassword = request.body.password;
+
+        if (!reqUserName) {
+            return response.status(httpStatus.BAD_REQUEST).send('Please input a username.');
+        }
+        if (!reqPassword) {
+            return response.status(httpStatus.BAD_REQUEST).send('Please input a password.');
+        }
 
         User.findOne({
             username: reqUserName,
@@ -51,8 +26,11 @@ module.exports = () => {
                 return response.status(httpStatus.FORBIDDEN).send(error);
             }
             if (user) {
+                // Set session user
+                request.session.user = user;
+
                 return response.status(httpStatus.OK)
-                .send(`{ 
+                    .send(`{ 
                     "success": "true",
                     "user": ${JSON.stringify(user)}
                 }`);
@@ -63,7 +41,29 @@ module.exports = () => {
         });
     };
 
+    const logoutUser = (request, response) => {
+
+        if (!request.session.user) {
+            return response.status(httpStatus.BAD_REQUEST).send('you are not logged in');
+        }
+
+        request.session.destroy((error) => {
+
+            if (error) {
+                return response.send(error);
+            }
+            
+            return response.status(httpStatus.OK)
+            .send(`
+            {
+                "success": true
+            }
+            `);
+        });
+    }
+
     const changePassword = (request, response) => {
+        
         const reqUserName = request.body.username;
         const oldPassword = request.body.password;
         const newPassword = request.body.newPassword;
@@ -119,6 +119,9 @@ module.exports = () => {
 
         const reqUserName = request.body.username;
         const reqPassword = request.body.password;
+        const reqFirstName = request.body.firstName;
+        const reqSurname = request.body.surname;
+        const reqIsAdmin = request.body.isAdmin;
 
         // check request has username and password
         if (!reqUserName) {
@@ -126,6 +129,12 @@ module.exports = () => {
         }
         if (!reqPassword) {
             return response.status(httpStatus.BAD_REQUEST).send('Please input a password');
+        }
+        if (!reqFirstName) {
+            return response.status(httpStatus.BAD_REQUEST).send('Please input a first name');
+        }
+        if (!reqSurname) {
+            return response.status(httpStatus.BAD_REQUEST).send('Please input a surname');
         }
 
         // check username does not already exist
@@ -137,14 +146,17 @@ module.exports = () => {
                 return response.send(error);
             }
             if (count > 0) {
-                return response.send(`User ${reqUserName} already exists.`);
+                return response.status(httpStatus.BAD_REQUEST).send(`User ${reqUserName} already exists.`);
             }
             else {
                 // add username / password
 
                 const user = new User({
                     username: reqUserName,
-                    password: reqPassword
+                    password: reqPassword,
+                    firstName: reqFirstName,
+                    surname: reqSurname,
+                    isAdmin: reqIsAdmin
                 });
 
                 user.save();
@@ -155,6 +167,59 @@ module.exports = () => {
 
     };
 
-    return { loginUser, changePassword, getUsers, addUser };
+    const findUserById = (request, response, next) => {
+
+        User.findById(request.params.userId, (error, user) => {
+            if (error) {
+                return response.send(error);
+            }
+            if (user) {
+                request.user = user;
+                return next();
+            }
+            else {
+                return response.sendStatus(httpStatus.NOT_FOUND);
+            }
+        });
+
+    };
+
+    /**
+     * Updates the firstname, surname and isAdmin fields as specified
+     * 
+     * @param {Object} request request object
+     * @param {Object} response response object
+     */
+    const updateUserDetails = (request, response) => {
+
+        const { user } = request;
+
+        user.firstName = request.body.firstName;
+        user.surname = request.body.surname;
+        user.isAdmin = request.body.isAdmin;
+
+        return request.user.save((error) => {
+            if (error) {
+                return response.send(error);
+            }
+            return response.json(user);
+        });
+
+    };
+
+    const getCurrentIdentity = (request, response) => {
+
+        if (request.session.user) {
+            return response.status(httpStatus.OK).send(request.session.user);
+        }
+
+        return response.send(null);
+
+    };
+
+    return {
+        loginUser, logoutUser, changePassword, getUsers, addUser, findUserById, updateUserDetails,
+        getCurrentIdentity
+    };
 
 };

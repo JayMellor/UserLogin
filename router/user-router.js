@@ -9,10 +9,8 @@ module.exports = () => {
     const userRouter = express.Router();
 
     const options = {
-        allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "X-Access-Token"],
-        credentials: true,
-        methods: "GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE",
         origin: permittedOrigin,
+        credentials: true,
         preflightContinue: false
     };
 
@@ -26,6 +24,17 @@ module.exports = () => {
 
     userRouter.route('/users/new')
         .post(controller.addUser);
+
+    userRouter.route('/users/currentUser')
+        .get(controller.getCurrentIdentity);
+
+    userRouter.route('/users/logout')
+        .get(controller.logoutUser);
+
+    userRouter.use('/users/:userId', controller.findUserById);
+
+    userRouter.route('/users/:userId')
+        .put(controller.updateUserDetails);
 
     userRouter.options("*", cors(options));
 
