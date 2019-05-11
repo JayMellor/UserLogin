@@ -23,7 +23,7 @@ module.exports = () => {
         .put(controller.changePassword);
 
     userRouter.route('/users/new')
-        .post(controller.addUser);
+        .put(controller.addUser);
 
     userRouter.route('/users/currentUser')
         .get(controller.getCurrentIdentity);
@@ -34,6 +34,7 @@ module.exports = () => {
     userRouter.use('/users/:userId', controller.findUserById);
 
     userRouter.route('/users/:userId')
+        .get(controller.getUser)
         .put(controller.updateUserDetails);
 
     userRouter.options("*", cors(options));

@@ -52,9 +52,9 @@ module.exports = () => {
             if (error) {
                 return response.send(error);
             }
-            
+
             return response.status(httpStatus.OK)
-            .send(`
+                .send(`
             {
                 "success": true
             }
@@ -63,7 +63,7 @@ module.exports = () => {
     }
 
     const changePassword = (request, response) => {
-        
+
         const reqUserName = request.body.username;
         const oldPassword = request.body.password;
         const newPassword = request.body.newPassword;
@@ -169,9 +169,9 @@ module.exports = () => {
 
     const findUserById = (request, response, next) => {
 
-        User.findById(request.params.userId, (error, user) => {
+        User.findById(request.params.userId,'-password', (error, user) => {
             if (error) {
-                return response.send(error);
+                return response.status(httpStatus.BAD_REQUEST).send(error);
             }
             if (user) {
                 request.user = user;
@@ -182,6 +182,10 @@ module.exports = () => {
             }
         });
 
+    };
+
+    const getUser = (request, response) => {
+        return response.status(httpStatus.OK).json(request.user);
     };
 
     /**
@@ -218,7 +222,7 @@ module.exports = () => {
     };
 
     return {
-        loginUser, logoutUser, changePassword, getUsers, addUser, findUserById, updateUserDetails,
+        loginUser, logoutUser, changePassword, getUsers, addUser, findUserById, getUser, updateUserDetails,
         getCurrentIdentity
     };
 
