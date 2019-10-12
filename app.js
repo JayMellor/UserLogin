@@ -20,7 +20,7 @@ app.get('/', (request, response) => {
 app.use(session({
     secret: 'iLoveElephants',
     cookie: {
-        maxAge: 1 * 360000,
+        maxAge: 1 * 36000000,
         secure: false
     }, 
     store: new MongoStore({
@@ -36,5 +36,6 @@ app.use(bodyParser.json());
 app.use('/api', userRouter)
 
 app.server = app.listen(port, () => {
+    // eslint-disable-next-line no-console
     console.log(`Running on port ${port}`);
 });

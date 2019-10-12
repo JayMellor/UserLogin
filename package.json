@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "start": "nodemon app.js",
-    "test": "mocha tests/**/*Tests.js"
+    "test": "mocha tests/**/*Tests.js",
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
@@ -40,5 +41,8 @@
       "NODE_ENV": "development",
       "PORT": 4000
     }
+  },
+  "devDependencies": {
+    "eslint": "^5.16.0"
   }
 }
