@@ -29,7 +29,7 @@
     "express": "^4.16.4",
     "express-session": "^1.16.1",
     "http-status": "^1.3.2",
-    "mongoose": "5.4.22"
+    "mongoose": "5.7.5"
   },
   "nodemonConfig": {
     "restartable": "rs",
